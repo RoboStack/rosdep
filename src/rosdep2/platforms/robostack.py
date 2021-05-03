@@ -32,7 +32,7 @@ from rospkg.os_detect import OS_ROBOSTACK
 
 from ..installers import PackageManagerInstaller
 
-CONDA_INSTALLER = 'conda'
+CONDA_INSTALLER = 'robostack'
 
 
 def is_mamba_installed():
@@ -52,12 +52,14 @@ def register_platforms(context):
     context.set_default_os_installer_key(OS_ROBOSTACK, lambda self: CONDA_INSTALLER)
 
 
-def conda_detect_single(p):
-    return not subprocess.call(['conda', 'list', '-c', '-f', p], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-
 def conda_detect(packages):
-    return [p for p in packages if conda_detect_single(p)]
+    conda_ret = subprocess.check_output(['conda', 'list', '-e', '-q']).splitlines()
+    conda_ret_converted = [s.decode("utf-8") for s in conda_ret]
+    ret_list = []
+    for p in packages:
+        if any(conda_ret_converted_item.startswith(p + '=') for conda_ret_converted_item in conda_ret_converted):
+            ret_list.append(p)
+    return ret_list
 
 
 class CondaInstaller(PackageManagerInstaller):
