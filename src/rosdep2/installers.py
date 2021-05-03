@@ -439,7 +439,7 @@ class RosdepInstaller(object):
 
         installer_context = self.installer_context
 
-        # resolutions have been unique()
+        # resolutions have been unique()d
         if verbose:
             print('resolving for resources [%s]' % (', '.join(resources)))
         resolutions, errors = self.lookup.resolve_all(resources, installer_context, implicit=implicit)
