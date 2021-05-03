@@ -44,7 +44,7 @@ def is_mamba_installed():
 
 
 def register_installers(context):
-    context.set_installer(ROBOSTACK_INSTALLER, CondaInstaller())
+    context.set_installer(ROBOSTACK_INSTALLER, RoboStackInstaller())
 
 
 def register_platforms(context):
@@ -57,14 +57,24 @@ def conda_detect(packages):
     conda_ret_converted = [s.decode("utf-8") for s in conda_ret]
     ret_list = []
     for p in packages:
-        if any(conda_ret_converted_item.startswith(p + '=') for conda_ret_converted_item in conda_ret_converted):
+        if p == 'REQUIRE_OPENGL' or p == 'REQUIRE_GL':
             ret_list.append(p)
+            continue
+
+        if ' ' in p:
+            pkg_name = p.split(' ')[0]
+            pkg_version = p.split(' ')[1]
+            if any(conda_ret_converted_item.startswith(pkg_name + '=' + pkg_version + '=') for conda_ret_converted_item in conda_ret_converted):
+                ret_list.append(p)
+        else:
+            if any(conda_ret_converted_item.startswith(p + '=') for conda_ret_converted_item in conda_ret_converted):
+                ret_list.append(p)
     return ret_list
 
 
-class CondaInstaller(PackageManagerInstaller):
+class RoboStackInstaller(PackageManagerInstaller):
     def __init__(self):
-        super(CondaInstaller, self).__init__(conda_detect)
+        super(RoboStackInstaller, self).__init__(conda_detect)
 
     def get_install_command(self, resolved, interactive=True, reinstall=False, quiet=False):
         packages = self.get_packages_to_install(resolved, reinstall=reinstall)
