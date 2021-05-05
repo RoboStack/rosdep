@@ -64,7 +64,7 @@ def conda_detect(packages):
         if ' ' in p:
             pkg_name = p.split(' ')[0]
             pkg_version = p.split(' ')[1]
-            if any(conda_ret_converted_item.startswith(pkg_name + '=' + pkg_version + '=') for conda_ret_converted_item in conda_ret_converted):
+            if any(conda_ret_converted_item.startswith(pkg_name + '=' + pkg_version) for conda_ret_converted_item in conda_ret_converted):
                 ret_list.append(p)
         else:
             if any(conda_ret_converted_item.startswith(p + '=') for conda_ret_converted_item in conda_ret_converted):
@@ -78,6 +78,8 @@ class RoboStackInstaller(PackageManagerInstaller):
 
     def get_install_command(self, resolved, interactive=True, reinstall=False, quiet=False):
         packages = self.get_packages_to_install(resolved, reinstall=reinstall)
+        packages = [p if ' ' not in p else p.replace(' ', '=') for p in packages]
+
         if not packages:
             return []
         if is_mamba_installed:
@@ -96,3 +98,4 @@ class RoboStackInstaller(PackageManagerInstaller):
 
     def get_version_strings(self):
         return subprocess.check_output(('conda', '--version'))
+    
