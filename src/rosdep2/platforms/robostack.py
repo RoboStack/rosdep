@@ -35,12 +35,15 @@ from ..installers import PackageManagerInstaller
 ROBOSTACK_INSTALLER = 'robostack'
 
 
-def is_mamba_installed():
-    try:
-        subprocess.Popen(['mamba'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
-        return True
-    except OSError:
-        return False
+def get_conda_mamba_cmd():
+    candidate_list = ['micromamba', 'mamba', 'conda']
+    for candidate in candidate_list:
+        try:
+            subprocess.Popen([candidate], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+            return candidate
+        except OSError:
+            continue
+    raise Exception('None of ' + ', '.join(candidate_list) + ' was found.')
 
 
 def register_installers(context):
@@ -53,7 +56,7 @@ def register_platforms(context):
 
 
 def conda_detect(packages):
-    conda_ret = subprocess.check_output(['conda', 'list', '-e', '-q']).splitlines()
+    conda_ret = subprocess.check_output([get_conda_mamba_cmd(), 'list', '-e', '-q']).splitlines()
     conda_ret_converted = [s.decode("utf-8") for s in conda_ret]
     ret_list = []
     for p in packages:
@@ -82,11 +85,8 @@ class RoboStackInstaller(PackageManagerInstaller):
 
         if not packages:
             return []
-        if is_mamba_installed:
-            installer_cmd = 'mamba'
-        else:
-            installer_cmd = 'conda'
-        base_cmd = [installer_cmd, 'install']
+
+        base_cmd = [get_conda_mamba_cmd(), 'install']
         if not interactive:
             base_cmd.append('-y')
         if quiet:
@@ -97,5 +97,4 @@ class RoboStackInstaller(PackageManagerInstaller):
         return [base_cmd + packages]
 
     def get_version_strings(self):
-        return subprocess.check_output(('conda', '--version'))
-    
+        return subprocess.check_output((get_conda_mamba_cmd(), '--version'))
