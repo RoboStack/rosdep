@@ -27,6 +27,7 @@
 
 # Author Tobias Fischer/info@tobiasfischer.info
 import subprocess
+import json
 
 from rospkg.os_detect import OS_ROBOSTACK
 
@@ -56,22 +57,30 @@ def register_platforms(context):
 
 
 def conda_detect(packages):
-    conda_ret = subprocess.check_output([get_conda_mamba_cmd(), 'list', '-e', '-q']).splitlines()
-    conda_ret_converted = [s.decode("utf-8") for s in conda_ret]
+    conda_ret = json.loads(subprocess.check_output([get_conda_mamba_cmd(), 'list', '--json']))
+    installed_package_names = [installed_package['name'] for installed_package in conda_ret]
+    installed_package_versions = [installed_package['version'] for installed_package in conda_ret]
     ret_list = []
-    for p in packages:
-        if p == 'REQUIRE_OPENGL' or p == 'REQUIRE_GL':
-            ret_list.append(p)
+    for requested_package in packages:
+        if requested_package == 'REQUIRE_OPENGL' or requested_package == 'REQUIRE_GL':
+            ret_list.append(requested_package)
             continue
 
-        if ' ' in p:
-            pkg_name = p.split(' ')[0]
-            pkg_version = p.split(' ')[1]
-            if any(conda_ret_converted_item.startswith(pkg_name + '=' + pkg_version) for conda_ret_converted_item in conda_ret_converted):
-                ret_list.append(p)
+        if ' ' in requested_package:
+            pkg_name = requested_package.split(' ')[0]
+            pkg_version = requested_package.split(' ')[1]
+            try:
+                installed_package_idx = installed_package_names.index(pkg_name)
+                if installed_package_versions[installed_package_idx].startswith(pkg_version):
+                    ret_list.append(requested_package)
+            except ValueError:
+                continue
         else:
-            if any(conda_ret_converted_item.startswith(p + '=') for conda_ret_converted_item in conda_ret_converted):
-                ret_list.append(p)
+            try:
+                installed_package_idx = installed_package_names.index(requested_package)
+                ret_list.append(requested_package)
+            except ValueError:
+                continue
     return ret_list
 
 
