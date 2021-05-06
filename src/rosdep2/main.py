@@ -177,7 +177,7 @@ ERROR: %s
         sys.exit(1)
     except CachePermissionError as e:
         print(str(e))
-        print("Try running 'sudo rosdep fix-permissions'")
+        print("Try running 'rosdep fix-permissions'")
         sys.exit(1)
     except UnsupportedOs as e:
         print('Unsupported OS: %s\nSupported OSes are [%s]' % (e.args[0], ', '.join(e.args[1])), file=sys.stderr)
@@ -215,11 +215,11 @@ def check_for_sources_list_init(sources_cache_dir):
 
     sources_list_dir = get_sources_list_dir()
     if not os.path.exists(sources_list_dir):
-        commands.insert(0, 'sudo rosdep init')
+        commands.insert(0, 'rosdep init')
     else:
         filelist = [f for f in os.listdir(sources_list_dir) if f.endswith('.list')]
         if not filelist:
-            commands.insert(0, 'sudo rosdep init')
+            commands.insert(0, 'rosdep init')
 
     if commands:
         commands = '\n'.join(['    %s' % c for c in commands])
@@ -607,7 +607,7 @@ def command_init(options):
         print('ERROR: cannot create %s:\n\t%s' % (path, e), file=sys.stderr)
         return 2
     except OSError as e:
-        print("ERROR: cannot create %s:\n\t%s\nPerhaps you need to run 'sudo rosdep init' instead" % (path, e), file=sys.stderr)
+        print("ERROR: cannot create %s:\n\t%s\nPerhaps you need to run 'rosdep init' instead" % (path, e), file=sys.stderr)
         return 3
     finally:
         os.umask(old_umask)
@@ -629,12 +629,12 @@ def command_update(options):
     warnings.filterwarnings('ignore', category=PreRep137Warning)
 
     if not os.path.exists(sources_list_dir):
-        print('ERROR: no sources directory exists on the system meaning rosdep has not yet been initialized.\n\nPlease initialize your rosdep with\n\n\tsudo rosdep init\n')
+        print('ERROR: no sources directory exists on the system meaning rosdep has not yet been initialized.\n\nPlease initialize your rosdep with\n\n\trosdep init\n')
         return 1
 
     filelist = [f for f in os.listdir(sources_list_dir) if f.endswith('.list')]
     if not filelist:
-        print('ERROR: no data sources in %s\n\nPlease initialize your rosdep with\n\n\tsudo rosdep init\n' % sources_list_dir, file=sys.stderr)
+        print('ERROR: no data sources in %s\n\nPlease initialize your rosdep with\n\n\trosdep init\n' % sources_list_dir, file=sys.stderr)
         return 1
     try:
         print('reading in sources list data from %s' % (sources_list_dir))
@@ -642,7 +642,7 @@ def command_update(options):
         try:
             if os.geteuid() == 0:
                 print("Warning: running 'rosdep update' as root is not recommended.", file=sys.stderr)
-                print("  You should run 'sudo rosdep fix-permissions' and invoke 'rosdep update' again without sudo.", file=sys.stderr)
+                print("  You should run 'rosdep fix-permissions' and invoke 'rosdep update' again without sudo.", file=sys.stderr)
         except AttributeError:
             # nothing we wanna do under Windows
             pass

@@ -104,7 +104,7 @@ def get_catkin_view(rosdistro_name, os_name, os_version, update=True):
     sources_list_dir = get_sources_list_dir()
     if not os.path.exists(sources_list_dir):
         raise ValidationFailed("""rosdep database is not initialized, please run:
-\tsudo rosdep init
+\rosdep init
 """)
 
     if update:
