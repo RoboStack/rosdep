@@ -71,7 +71,7 @@ def conda_detect(packages):
             pkg_version = requested_package.split(' ')[1]
             try:
                 installed_package_idx = installed_package_names.index(pkg_name)
-                if installed_package_versions[installed_package_idx].startswith(pkg_version):
+                if installed_package_versions[installed_package_idx] == pkg_version or installed_package_versions[installed_package_idx].startswith(pkg_version + '.'):
                     ret_list.append(requested_package)
             except ValueError:
                 continue
