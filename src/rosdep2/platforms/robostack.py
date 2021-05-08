@@ -103,7 +103,7 @@ class RoboStackInstaller(PackageManagerInstaller):
         if reinstall:
             base_cmd.append('--force-reinstall')
 
-        return [base_cmd + packages]
+        return [base_cmd + packages + ['-c', 'conda-forge', '-c', 'robostack']]
 
     def get_version_strings(self):
         return subprocess.check_output((get_conda_mamba_cmd(), '--version'))
